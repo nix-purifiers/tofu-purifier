@@ -49,8 +49,8 @@ tofu-purifier prefetch
 ```
 
 OpenTofu has no native targeted provider/module upgrade command, so named
-updates are not supported. To change one dependency, edit its version or
-source constraint and run `lock`. The wrapper directs native upgrade and
+updates are not supported. Use `update` after changing provider version constraints; `lock` retains
+native provider selections. The wrapper directs native upgrade and
 provider-mirroring commands through the purifier CLI.
 
 Configuration fingerprints cover root/local-module `.tf`, `.tf.json`,

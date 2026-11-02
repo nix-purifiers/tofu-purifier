@@ -189,5 +189,12 @@ in
   entries = if usable then providerEntries ++ import ./module-entries.nix modules else [ ];
   modules = if usable then modules else { };
   providerVersions = if usable then lib.mapAttrs (_: p: p.version) providers else { };
+  providerSystems =
+    if usable then
+      lib.mapAttrs (
+        _: targets: map (platform: platforms.${platform}) (builtins.attrNames targets)
+      ) downloads
+    else
+      { };
   toolVersion = data.toolVersion or "";
 }

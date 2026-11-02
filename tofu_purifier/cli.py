@@ -76,7 +76,7 @@ def do_lock(root,native,sidecar,update=False,platforms=('linux_amd64','linux_arm
             data=read(sidecar)
             if isinstance(data,dict) and data.get('version')==1 and data.get('contentHash')==lock.seal(data)['contentHash'] and isinstance(data.get('modules'),dict):previous=data
         except ValueError:pass
-    if previous and not update and not lock.problems(root,native,previous) and all(set(v)==set(platforms) for v in previous['providers'].values()):
+    if previous and previous.get('platformHashesPrepared') is True and not update and not lock.problems(root,native,previous) and all(set(v)==set(platforms) for v in previous['providers'].values()):
         print(f'Existing dependency resolution retained in {sidecar}');return
     with tempfile.TemporaryDirectory(prefix='tofu-lock-') as temporary:
         stage=Path(temporary)/'source';shutil.copytree(root,stage,ignore=ignore,symlinks=True)
@@ -88,6 +88,10 @@ def do_lock(root,native,sidecar,update=False,platforms=('linux_amd64','linux_arm
             try:
                 lock.providers(seed);original=seed.read_bytes();staged_native.write_bytes(original)
             except ValueError:staged_native.unlink(missing_ok=True)
+        current_data=Path(os.environ.get('TF_DATA_DIR',root/'.terraform'))
+        if not current_data.is_absolute():current_data=root/current_data
+        if not update and (current_data/'providers').exists():
+            shutil.copytree(current_data/'providers',stage/'.terraform/providers',symlinks=True,dirs_exist_ok=True,ignore=shutil.ignore_patterns('*.before-purifier'))
         old_modules=None
         if previous and not update and any(m.get('kind')=='git' for m in previous['modules'].values()):
             old_modules=realize(root,native,sidecar,'modules',Path(temporary)/'module-pins')
@@ -99,13 +103,23 @@ def do_lock(root,native,sidecar,update=False,platforms=('linux_amd64','linux_arm
         if not staged_native.exists():staged_native.write_text('# No external providers are required.\n')
         version=run([tool(),'version','-json'],env=env,text=True,capture_output=True)
         tool_version=json.loads(version.stdout)['terraform_version']
-        native_providers=lock.providers(staged_native);downloads={}
-        metadata={address:{platform:registry_download(address,p['version'],platform,tool_version) for platform in platforms} for address,p in native_providers.items()}
-        if any('zh:'+d['sha256'] not in native_providers[address]['hashes'] for address,targets in metadata.items() for d in targets.values()):
-            run([tool(),f'-chdir={stage}','providers','lock',*['-platform='+p for p in platforms]],env=env)
-            native_providers=lock.providers(staged_native)
-        for address,targets in metadata.items():
-            downloads[address]={platform:{'url':download['url'],'hashIndex':native_providers[address]['hashes'].index('zh:'+download['sha256'])} for platform,download in targets.items()}
+        native_providers=lock.providers(staged_native);downloads={};prepared=False
+        if previous and previous.get('platformHashesPrepared') is True and seed.exists():
+            old_providers=lock.providers(seed)
+            prepared=(previous['inputs']['native']==lock.file_hash(seed)
+                      and set(old_providers)==set(native_providers)
+                      and all(old_providers[a]['version']==p['version'] and old_providers[a]['hashes']==p['hashes'] and set(platforms)<=set(previous['providers'][a]) for a,p in native_providers.items()))
+        if prepared:
+            downloads={address:{platform:previous['providers'][address][platform] for platform in platforms} for address in native_providers}
+        else:
+            metadata={address:{platform:registry_download(address,p['version'],platform,tool_version) for platform in platforms} for address,p in native_providers.items()}
+            # Unpacked mirrors need native h1 hashes for every target platform,
+            # even when the signed lock already contains every archive zh hash.
+            if native_providers:
+                run([tool(),f'-chdir={stage}','providers','lock',*['-platform='+p for p in platforms]],env=env)
+                native_providers=lock.providers(staged_native)
+            for address,targets in metadata.items():
+                downloads[address]={platform:{'url':download['url'],'hashIndex':native_providers[address]['hashes'].index('zh:'+download['sha256'])} for platform,download in targets.items()}
         catalog=read(stage/'.terraform/modules/modules.json') if (stage/'.terraform/modules/modules.json').exists() else {'Modules':[]}
         modules={};git_hashes={}
         for item in catalog['Modules']:
@@ -138,7 +152,7 @@ def do_lock(root,native,sidecar,update=False,platforms=('linux_amd64','linux_arm
             try:
                 if lock.providers(seed)==native_providers:staged_native.write_bytes(original)
             except ValueError:pass
-        data=lock.seal({'version':1,'toolVersion':tool_version,'inputs':{'native':lock.file_hash(staged_native),'configuration':lock.configuration(root,modules)},'providers':downloads,'modules':modules,'moduleKeys':sorted(modules)})
+        data=lock.seal({'version':1,'toolVersion':tool_version,'platformHashesPrepared':True,'inputs':{'native':lock.file_hash(staged_native),'configuration':lock.configuration(root,modules)},'providers':downloads,'modules':modules,'moduleKeys':sorted(modules)})
         if errors:=lock.problems(root,staged_native,data):raise ValueError('\n'.join(errors))
         native.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(staged_native,native);write(sidecar,data)
     print(f'Locked {len(downloads)} providers and {len(modules)} modules in {sidecar}')

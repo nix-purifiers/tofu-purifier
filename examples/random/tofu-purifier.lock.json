@@ -1,5 +1,5 @@
 {
-  "contentHash": "3b775368f4d93f0e2eb6b1ad05906a39a88d01ea2f48f0d41f265c3dc3d19365",
+  "contentHash": "65e813da2d0ba0c1d825ae33ec2df070030df0253df0541fecf33e4150850d2f",
   "inputs": {
     "configuration": {
       "main.tf": "c203d565569390dd1e2dd7a6bfbc2190e65268b1e5217bff0b795e043d6d961c",
@@ -20,6 +20,7 @@
       "url": "https://github.com/cloudposse/terraform-null-label.git"
     }
   },
+  "platformHashesPrepared": true,
   "providers": {
     "registry.opentofu.org/hashicorp/random": {
       "linux_amd64": {
