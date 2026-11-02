@@ -76,7 +76,7 @@ def do_lock(root,native,sidecar,update=False,platforms=('linux_amd64','linux_arm
             data=read(sidecar)
             if isinstance(data,dict) and data.get('version')==1 and data.get('contentHash')==lock.seal(data)['contentHash'] and isinstance(data.get('modules'),dict):previous=data
         except ValueError:pass
-    if previous and previous.get('platformHashesPrepared') is True and not update and not lock.problems(root,native,previous) and all(set(v)==set(platforms) for v in previous['providers'].values()):
+    if previous and previous.get('platformHashesPrepared') is True and previous.get('toolVersion')==os.environ.get('TOFU_PURIFIER_TOOL_VERSION') and not update and not lock.problems(root,native,previous) and all(set(v)==set(platforms) for v in previous['providers'].values()):
         print(f'Existing dependency resolution retained in {sidecar}');return
     with tempfile.TemporaryDirectory(prefix='tofu-lock-') as temporary:
         stage=Path(temporary)/'source';shutil.copytree(root,stage,ignore=ignore,symlinks=True)

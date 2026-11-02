@@ -41,6 +41,7 @@ stdenvNoCC.mkDerivation {
       } \
       --prefix PYTHONPATH : "$out/lib/tofu-purifier" \
       --set TOFU_PURIFIER_TOOL ${nativeTool}/bin/tofu \
+      --set TOFU_PURIFIER_TOOL_VERSION ${nativeTool.version} \
       --set TOFU_PURIFIER_REALIZE "$out/lib/tofu-purifier/nix/realize.nix" \
       --set-default SSL_CERT_FILE ${cacert}/etc/ssl/certs/ca-bundle.crt
     makeWrapper "$out/bin/tofu-purifier" "$out/bin/tofu" --add-flags "native --"

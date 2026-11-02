@@ -30,7 +30,13 @@ let
     };
 in
 if target == "dependencies" then
-  pkgs.callPackage ./dependencies.nix { inherit purifier; } { lock = read; }
+  let
+    checked = purifier.checkLock read;
+  in
+  assert
+    checked.toolVersion == nativeTool.version
+    || throw "tofu-purifier: lock needs tool version ${checked.toolVersion}, but this scope delivers ${nativeTool.version}; run tofu-purifier lock with the intended toolchain";
+  pkgs.callPackage ./dependencies.nix { inherit purifier; } { lock = checked; }
 else if target == "modules" then
   oldModules
 else if target == "runtime" then
