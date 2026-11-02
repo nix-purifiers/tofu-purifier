@@ -1,0 +1,7 @@
+result*
+.tofu-purifier/
+.terraform/
+*.tfstate
+*.tfstate.*
+__pycache__/
+*.pyc

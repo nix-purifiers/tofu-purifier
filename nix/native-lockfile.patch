@@ -1,0 +1,18 @@
+--- a/internal/command/meta_dependencies.go
++++ b/internal/command/meta_dependencies.go
+@@ -37,7 +37,14 @@
+ // case. Eventually we will phase out those legacy arguments in favor of the
+ // global -chdir=... option, which _does_ preserve the intended invariant
+ // that the root module directory is always the current working directory.
+-const dependencyLockFilename = ".terraform.lock.hcl"
++// The purifier wrapper sets an absolute path when a packaging repository keeps
++// the native lock outside the source. Ordinary OpenTofu keeps its normal path.
++var dependencyLockFilename = func() string {
++	if filename := os.Getenv("NIX_PURIFIER_NATIVE_LOCKFILE"); filename != "" {
++		return filename
++	}
++	return ".terraform.lock.hcl"
++}()
+ 
+ // lockedDependencies reads the dependency lock information from the lock file
+ // in the current working directory.

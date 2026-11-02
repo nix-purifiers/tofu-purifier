@@ -1,0 +1,37 @@
+{
+  "contentHash": "3b775368f4d93f0e2eb6b1ad05906a39a88d01ea2f48f0d41f265c3dc3d19365",
+  "inputs": {
+    "configuration": {
+      "main.tf": "c203d565569390dd1e2dd7a6bfbc2190e65268b1e5217bff0b795e043d6d961c",
+      "tests/check.tftest.hcl": "e67fbb101311ca7fd855a0e9c59e1b4fd3f80ef31438de02fcca216e36b0040c"
+    },
+    "native": "2f56d769df8d55845dd99b5c1917c9e2969af376ac881cb901ab8bbb9a00d310"
+  },
+  "moduleKeys": [
+    "label"
+  ],
+  "modules": {
+    "label": {
+      "hash": "sha256-tnwcd2nTLxkmljJDpV4MZMycAj+xALjcPudn5bSCUko=",
+      "kind": "git",
+      "rev": "38364d79c1082de13373666252e1276975919543",
+      "source": "git::https://github.com/cloudposse/terraform-null-label.git?ref=38364d79c1082de13373666252e1276975919543",
+      "subdir": "",
+      "url": "https://github.com/cloudposse/terraform-null-label.git"
+    }
+  },
+  "providers": {
+    "registry.opentofu.org/hashicorp/random": {
+      "linux_amd64": {
+        "hashIndex": 17,
+        "url": "https://github.com/opentofu/terraform-provider-random/releases/download/v3.9.1/terraform-provider-random_3.9.1_linux_amd64.zip"
+      },
+      "linux_arm64": {
+        "hashIndex": 15,
+        "url": "https://github.com/opentofu/terraform-provider-random/releases/download/v3.9.1/terraform-provider-random_3.9.1_linux_arm64.zip"
+      }
+    }
+  },
+  "toolVersion": "1.13.2",
+  "version": 1
+}
