@@ -23,7 +23,7 @@
 }:
 let
   lock = purifier.checkLock (
-    (import ./read-lock.nix { inherit lib; }) { inherit src lockFile tofuLock; }
+    (import ../../lib-overlays/default/read-lock.nix { inherit lib; }) { inherit src lockFile tofuLock; }
   );
   dependencies =
     (import ./dependencies.nix {
@@ -60,7 +60,7 @@ let
         chmod -R u+w "$out"
         cp ${tofuLock} "$out/.terraform.lock.hcl"
         cp ${lockFile} "$out/tofu-purifier.lock.json"
-        python ${../tofu_purifier/materialize.py} "$out" ${lockFile} ${dependencies}
+        python ${../../tofu_purifier/materialize.py} "$out" ${lockFile} ${dependencies}
         tofu -chdir="$out" init -backend=false -get=false -input=false -lockfile=readonly -no-color ${
           lib.optionalString (lock.providerVersions != { }) "-plugin-dir=${dependencies}/providers"
         }

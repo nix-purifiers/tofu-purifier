@@ -17,12 +17,12 @@
 stdenvNoCC.mkDerivation {
   pname = "tofu-purifier";
   version = "0.1.0";
-  src = ../.;
+  src = ../..;
   nativeBuildInputs = [ makeWrapper ];
   dontBuild = true;
   installPhase = ''
     mkdir -p "$out/bin" "$out/lib/tofu-purifier"
-    cp -r tofu_purifier nix "$out/lib/tofu-purifier/"
+    cp -r tofu_purifier nix lib-overlays pkgs "$out/lib/tofu-purifier/"
     install -m755 bin/tofu-purifier "$out/bin/tofu-purifier"
     substituteInPlace "$out/lib/tofu-purifier/nix/realize.nix" \
       --replace-fail '@nixpkgs@' '${nixpkgsSrc}' \

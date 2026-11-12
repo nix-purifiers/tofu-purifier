@@ -22,11 +22,11 @@
       overlay = final: prev: {
         tofu-purifier = final.lib.makeScope final.newScope (scope: {
           nativeTool = scope.callPackage ./nix/native-tool.nix { };
-          cli = scope.callPackage ./nix/cli.nix {
+          cli = scope.callPackage ./pkgs/tofu-purifier/default.nix {
             nixpkgsSrc = nixpkgs;
             purifierSrc = purifier;
           };
-          buildTofuProject = scope.callPackage ./nix/build-project.nix { purifier = shared final.lib; };
+          buildTofuProject = scope.callPackage ./pkgs/build-tofu-project/default.nix { purifier = shared final.lib; };
         });
       };
       pkgsFor =
@@ -38,7 +38,7 @@
     in
     {
       overlays.default = overlay;
-      lib.tofu-purifier.readLock = import ./nix/read-lock.nix { lib = nixpkgs.lib; };
+      lib.tofu-purifier = import ./lib-overlays/default { lib = nixpkgs.lib; };
       packages = forAll (system: {
         default = (pkgsFor system).tofu-purifier.cli;
         cli = self.packages.${system}.default;
