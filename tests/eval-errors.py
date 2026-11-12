@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory() as temporary:
     # The builder must reject the lock before fetching any dependency.
     expr = f'''let
       lib = import {lib};
-      read = import {source}/nix/read-lock.nix {{ inherit lib; }};
+      read = import {source}/lib-overlays/default/read-lock.nix {{ inherit lib; }};
       checked = (import {os.environ['PURIFIER']}/nix/lib {{ inherit lib; }}).checkLock;
     in checked (read {{ src = builtins.toPath {json.dumps(str(root))}; }})'''
     result = subprocess.run(['nix-instantiate', '--eval', '--strict', '--expr', expr], text=True, capture_output=True)

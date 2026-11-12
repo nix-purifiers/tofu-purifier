@@ -23,7 +23,7 @@ let
   };
   parsed = pkgs.writeText "tofu-native-lock.json" (
     builtins.toJSON (
-      import ../nix/provider-lock.nix { inherit (pkgs) lib; } (fixture + "/.terraform.lock.hcl")
+      import ../lib-overlays/default/provider-lock.nix { inherit (pkgs) lib; } (fixture + "/.terraform.lock.hcl")
     )
   );
   errorCheck =
